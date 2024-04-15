@@ -1,0 +1,44 @@
+const express = require('express');
+const cors = require('cors');
+const app = express();
+
+// Enable CORS for all origins
+app.use(cors());
+
+// Proxy endpoint
+app.get('/proxy', (req, res) => {
+  const targetUrl = req.query.url;
+
+  // Validate target URL (optional security)
+  if (!targetUrl || !isValidUrl(targetUrl)) {
+    return res.status(400).send('Invalid target URL');
+  }
+
+  // Fetch data from target URL
+  fetch(targetUrl)
+    .then(response => response.text())
+    .then(data => {
+      // Send fetched data back to client
+      res.send(data);
+    })
+    .catch(error => {
+      console.error('Error fetching data:', error);
+      res.status(500).send('Error fetching data');
+    });
+});
+
+// Helper function to validate URL (optional)
+function isValidUrl(url) {
+  try {
+    new URL(url);
+    return true;
+  } catch (e) {
+    return false;
+  }
+}
+
+// Start server
+const port = process.env.PORT || 3000;
+app.listen(port, () => {
+  console.log(`CORS proxy server listening on port ${port}`);
+});
